@@ -69,15 +69,25 @@
 # Global Python imports
 import atexit
 import itertools
+import logging
 import os
 import sys
+from os import (
+    environ,
+    listdir,
+    mkdir,
+    remove,
+)
+from os.path import (
+    abspath,
+    dirname,
+    expanduser,
+    isdir,
+    isfile,
+    join,
+    split,
+)
 
-from os import mkdir, remove, environ, listdir
-from os.path import abspath, dirname, expanduser
-from os.path import isdir, isfile
-from os.path import join, split
-
-import logging
 logging.basicConfig()
 
 # SCons imports
@@ -152,16 +162,32 @@ AddOption('--no-duplicate-sources', action='store_false',
 # Inject the built_tools directory into the python path.
 sys.path[1:1] = [ Dir('#build_tools').abspath ]
 
+import gem5_scons
+
 # Imports of gem5_scons happen here since it depends on some options which are
 # declared above.
-from gem5_scons import error, warning, summarize_warnings, parse_build_path
-from gem5_scons import TempFileSpawn, EnvDefaults, MakeAction, MakeActionTool
-from gem5_scons import kconfig
-import gem5_scons
-from gem5_scons.builders import ConfigFile, AddLocalRPATH, SwitchingHeaders
-from gem5_scons.builders import Blob
+from gem5_scons import (
+    EnvDefaults,
+    MakeAction,
+    MakeActionTool,
+    TempFileSpawn,
+    error,
+    kconfig,
+    parse_build_path,
+    summarize_warnings,
+    warning,
+)
+from gem5_scons.builders import (
+    AddLocalRPATH,
+    Blob,
+    ConfigFile,
+    SwitchingHeaders,
+)
 from gem5_scons.sources import TagImpliesTool
-from gem5_scons.util import compareVersions, readCommand
+from gem5_scons.util import (
+    compareVersions,
+    readCommand,
+)
 
 # Disable warnings when targets can be built with multiple environments but
 # with the same actions. This can happen intentionally if, for instance, a
@@ -193,6 +219,7 @@ main.Tool(SCons.Tool.FindTool(['g++', 'clang++'], main))
 Export('main')
 
 from gem5_scons.util import get_termcap
+
 termcap = get_termcap()
 
 # Check that we have a C/C++ compiler
@@ -791,10 +818,12 @@ for variant_path in variant_paths:
     with gem5_scons.Configure(env) as conf:
         # On Solaris you need to use libsocket for socket ops
         if not conf.CheckLibWithHeader(
-                [None, 'socket'], 'sys/socket.h', 'C++', 'accept(0,0,0);'):
+                [None, 'socket'], 'sys/socket.h', 'C++',
+                    call='accept(0,0,0);'):
            error("Can't find library with socket calls (e.g. accept()).")
 
-        if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++','zlibVersion();'):
+        if not conf.CheckLibWithHeader('z', 'zlib.h', 'C++',
+                                       call='zlibVersion();'):
             error('Did not find needed zlib compression library '
                   'and/or zlib.h header file.\n'
                   'Please install zlib and try again.')
