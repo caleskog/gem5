@@ -178,6 +178,145 @@ let {{
         decoder_output += eval(templateBase + "Constructor").subst(iop)
         exec_output += BasicExecute.subst(iop)
 
+    buildDataXRegInst(
+        "fusaprocess",
+        2,
+        """
+        /* FU Systolic Array (fusa) Parameter read
+         * Instruction format: |sf|_op54_|______|_op31|__rm__|o0|__ra__|__rn__|__rd__|
+         * Bits:               |31|30__29|28__24|23_21|20__16|15|14__10|9____5|4____0|
+         * Binary layout:      |_1|..00..|1_1011|_011.|0_1000|_0|001_11|01_001|0_1010|
+         * Hex layout:         |__|___9__|____B_|___7_|____8_|__|_1____|D____2|____A_|
+         * gem5 variables:     |__|______|______|_____|_Op264|__|_Op364|_Op164|Dest64|
+         *
+         * Bit details:
+         *  - 31:       32-bit(sf==0) or 64-bit(sf==1)
+         *  - 23-21:    011 (Fusaprocess64) or 100 (Fusaqueue64/Fusaload64)
+         *  - 15:       Fusaqueue64 (o0==0) or Fusaload64 (o0==1)
+         *
+         * Queueing arguments:
+         *  - rd (dest) = Output
+         *  - rm (op2)  = Thread index.
+         *  - ra (op3)  = Unused
+         *  - rn (op1)  = Parameter value.
+         */
+        // std::cout << "[data64.isa] called Fusaprocess64(...)" << std::endl;
+
+        uint64_t tid = XOp1;
+        uint64_t val = XOp2;
+
+        // std::cout << "[data64.isa] val: " << val << std::endl;
+        // std::cout << "[data64.isa] tid: " << tid << std::endl;
+
+        uint64_t result = 0;
+
+        // std::cout << "[data64.isa] getting SystolicArray from ThreadContext" << std::endl;
+        ThreadContext* tc = xc->tcBase();
+        SystolicArray * sa = tc->getSystolicArray();
+        if (sa) {
+            // std::cout << "[data64.isa] calling sa->process(...)" << std::endl;
+            result = sa->process(tid, val);
+        }
+
+        XDest = result;
+        """,
+        overrideOpClass="SAProcessOp")
+
+    buildDataXRegInst(
+        "fusaqueue",
+        3,
+        """
+        /* FU Systolic Array (fusa) Parameter read
+         * Instruction format: |sf|_op54_|______|_op31|__rm__|o0|__ra__|__rn__|__rd__|
+         * Bits:               |31|30__29|28__24|23_21|20__16|15|14__10|9____5|4____0|
+         * Binary layout:      |_1|..00..|1_1011|_100.|0_1000|_0|001_11|01_001|0_1010|
+         * Hex layout:         |__|___9__|____B_|___8_|____8_|__|_1____|D____2|____A_|
+         * gem5 variables:     |__|______|______|_____|_Op264|__|_Op364|_Op164|Dest64|
+         *
+         * Bit details:
+         *  - 31:       32-bit(sf==0) or 64-bit(sf==1)
+         *  - 23-21:    011 (Fusaprocess64) or 100 (Fusaqueue64/Fusaload64)
+         *  - 15:       Fusaqueue64 (o0==0) or Fusaload64 (o0==1)
+         *
+         * Queueing arguments:
+         *  - rd (dest) = Output
+         *  - rm (op2)  = Thread index
+         *  - ra (op3)  = Index
+         *  - rn (op1)  = Parameter value.
+         */
+        // std::cout << "[data64.isa] called Fusaqueue64(...)" << std::endl;
+
+        uint64_t tid = XOp2;
+        uint64_t idx = XOp3;
+        uint64_t val = XOp1;
+
+        // std::cout << "[data64.isa] val: " << val << std::endl;
+        // std::cout << "[data64.isa] idx: " << idx << std::endl;
+        // std::cout << "[data64.isa] tid: " << tid << std::endl;
+
+        uint64_t result = 0;
+
+        // std::cout << "[data64.isa] getting SystolicArray from ThreadContext" << std::endl;
+        ThreadContext* tc = xc->tcBase();
+        SystolicArray * sa = tc->getSystolicArray();
+        if (sa) {
+            // std::cout << "[data64.isa] calling sa->queue(...)" << std::endl;
+            result = sa->queue(tid, idx, val);
+            // sa->queue2(xc, tid, val, idx);
+            result = tid;
+        }
+
+        XDest = result;
+        """,
+        overrideOpClass="SAQueueOp")
+
+    buildDataXRegInst(
+        "fusaload",
+        3,
+        """
+        /* FU Systolic Array (fusa) Parameter read
+         * Instruction format: |sf|_op54_|______|_op31|__rm__|o0|__ra__|__rn__|__rd__|
+         * Bits:               |31|30__29|28__24|23_21|20__16|15|14__10|9____5|4____0|
+         * Binary layout:      |_1|..00..|1_1011|_100.|0_1000|_1|001_11|01_001|0_1010|
+         * Registers:          |__|______|______|_____|__x8__|__|__x7__|__x9__|__x10_|
+         * Hex layout:         |__|___9__|____B_|___8_|____8_|__|_9____|D____2|____A_|
+         * gem5 variables:     |__|______|______|_____|_Op264|__|_Op364|_Op164|Dest64|
+         *
+         * Bit details:
+         *  - 31:       32-bit(sf==0) or 64-bit(sf==1)
+         *  - 23-21:    011 (Fusaprocess64) or 100 (Fusaqueue64/Fusaload64)
+         *  - 15:       Fusaqueue64 (o0==0) or Fusaload64 (o0==1)
+         *
+         * Queueing arguments:
+         *  - rd (dest) = Output
+         *  - rm (op2)  = Thread index
+         *  - ra (op3)  = Index
+         *  - rn (op1)  = Parameter value.
+         */
+        // std::cout << "[data64.isa] called Fusaload64(...)" << std::endl;
+
+        uint64_t tid = XOp2;
+        uint64_t idx = XOp3;
+        uint64_t val = XOp1;
+
+        // std::cout << "[data64.isa] val: " << val << std::endl;
+        // std::cout << "[data64.isa] idx: " << idx << std::endl;
+        // std::cout << "[data64.isa] tid: " << tid << std::endl;
+
+        uint64_t result = 0;
+
+        // std::cout << "[data64.isa] getting SystolicArray from ThreadContext" << std::endl;
+        ThreadContext* tc = xc->tcBase();
+        SystolicArray * sa = tc->getSystolicArray();
+        if (sa) {
+            // std::cout << "[data64.isa] calling sa->load(...)" << std::endl;
+            result = sa->load(tid, idx, val);
+        }
+
+        XDest = result;
+        """,
+        overrideOpClass="SALoadOp")
+
     buildDataXRegInst("madd", 3, "Dest64 = Op164 + Op264 * Op364",
         overrideOpClass="IntMultOp")
     buildDataXRegInst("msub", 3, "Dest64 = Op164 - Op264 * Op364",

@@ -72,21 +72,8 @@ import itertools
 import logging
 import os
 import sys
-from os import (
-    environ,
-    listdir,
-    mkdir,
-    remove,
-)
-from os.path import (
-    abspath,
-    dirname,
-    expanduser,
-    isdir,
-    isfile,
-    join,
-    split,
-)
+from os import environ, listdir, mkdir, remove
+from os.path import abspath, dirname, expanduser, isdir, isfile, join, split
 
 logging.basicConfig()
 
@@ -163,31 +150,15 @@ AddOption('--no-duplicate-sources', action='store_false',
 sys.path[1:1] = [ Dir('#build_tools').abspath ]
 
 import gem5_scons
-
 # Imports of gem5_scons happen here since it depends on some options which are
 # declared above.
-from gem5_scons import (
-    EnvDefaults,
-    MakeAction,
-    MakeActionTool,
-    TempFileSpawn,
-    error,
-    kconfig,
-    parse_build_path,
-    summarize_warnings,
-    warning,
-)
-from gem5_scons.builders import (
-    AddLocalRPATH,
-    Blob,
-    ConfigFile,
-    SwitchingHeaders,
-)
+from gem5_scons import (EnvDefaults, MakeAction, MakeActionTool, TempFileSpawn,
+                        error, kconfig, parse_build_path, summarize_warnings,
+                        warning)
+from gem5_scons.builders import (AddLocalRPATH, Blob, ConfigFile,
+                                 SwitchingHeaders)
 from gem5_scons.sources import TagImpliesTool
-from gem5_scons.util import (
-    compareVersions,
-    readCommand,
-)
+from gem5_scons.util import compareVersions, readCommand
 
 # Disable warnings when targets can be built with multiple environments but
 # with the same actions. This can happen intentionally if, for instance, a

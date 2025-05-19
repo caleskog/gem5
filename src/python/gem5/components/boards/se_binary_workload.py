@@ -25,29 +25,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from pathlib import Path
-from typing import (
-    List,
-    Optional,
-    Union,
-)
+from typing import List, Optional, Tuple, Union
 
-from m5.objects import (
-    Process,
-    SEWorkload,
-)
+from m5.objects import Addr, Process, SEWorkload
 from m5.util import warn
 
 from gem5.resources.elfie import ELFieInfo
 from gem5.resources.looppoint import Looppoint
 
-from ...resources.resource import (
-    AbstractResource,
-    BinaryResource,
-    CheckpointResource,
-    FileResource,
-    SimpointDirectoryResource,
-    SimpointResource,
-)
+from ...resources.resource import (AbstractResource, BinaryResource,
+                                   CheckpointResource, FileResource,
+                                   SimpointDirectoryResource, SimpointResource)
 from ..processors.switchable_processor import SwitchableProcessor
 from .abstract_board import AbstractBoard
 
@@ -78,6 +66,7 @@ class SEBinaryWorkload:
         env_list: Optional[List[str]] = None,
         arguments: List[str] = [],
         checkpoint: Optional[Union[Path, CheckpointResource]] = None,
+        mem_map: Optional[List[Tuple[Addr, Addr, int, bool]]] = None,
     ) -> None:
         """Set up the system to run a specific binary.
 
@@ -95,6 +84,7 @@ class SEBinaryWorkload:
         :param arguments: The input arguments for the binary
         :param checkpoint: The checkpoint directory. Used to restore the
                            simulation to that checkpoint.
+        :param mem_map: Pre-map a memory range.
         """
 
         # We assume this this is in a multiple-inheritance setup with an
@@ -150,6 +140,13 @@ class SEBinaryWorkload:
         else:
             for core in self.get_processor().get_cores():
                 core.set_workload(process)
+
+        # # [CUSTOM] I have added 'mem_map' to hopefully stop the warning for
+        # # mremapping of vaddr.
+        # if mem_map is not None:
+        #     for map in mem_map:
+        #         process.map(map[0], map[1], map[2], map[3])
+
 
         # Set whether to exit on work items for the se_workload
         self.exit_on_work_items = exit_on_work_items

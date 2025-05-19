@@ -116,6 +116,9 @@ class OpClass(Enum):
         "SimdExt",
         "SimdFloatExt",
         "SimdConfig",
+        "SAProcess",
+        "SAQueue",
+        "SALoad"
     ]
 
 

@@ -52,178 +52,133 @@
 #include "mem/physical.hh"
 #include "params/ArmRelease.hh"
 
-namespace gem5
-{
+namespace gem5 {
 
 using namespace linux;
 using namespace ArmISA;
 
-ArmRelease::ArmRelease(const ArmReleaseParams &p)
-  : SimObject(p)
-{
-    for (auto ext : p.extensions) {
-        fatal_if(_extensions.find(ext) != _extensions.end(),
-            "Duplicated FEAT_\n");
+ArmRelease::ArmRelease(const ArmReleaseParams &p) : SimObject(p) {
+  for (auto ext : p.extensions) {
+    fatal_if(_extensions.find(ext) != _extensions.end(), "Duplicated FEAT_\n");
 
-        _extensions[ext] = true;
-    }
+    _extensions[ext] = true;
+  }
 }
 
 ArmSystem::ArmSystem(const Params &p)
-    : System(p),
-      _genericTimer(nullptr),
-      _gic(nullptr),
-      _pwrCtrl(nullptr),
+    : System(p), _genericTimer(nullptr), _gic(nullptr), _pwrCtrl(nullptr),
       _highestELIs64(p.highest_el_is_64),
       _physAddrRange64(p.phys_addr_range_64),
-      _haveLargeAsid64(p.have_large_asid_64),
-      _sveVL(p.sve_vl),
-      _smeVL(p.sme_vl),
-      semihosting(p.semihosting),
-      release(p.release),
-      multiProc(p.multi_proc)
-{
-    if (p.auto_reset_addr) {
-        _resetAddr = workload->getEntry();
-    } else {
-        _resetAddr = p.reset_addr;
-        warn_if(workload->getEntry() != _resetAddr,
-                "Workload entry point %#x and reset address %#x are different",
-                workload->getEntry(), _resetAddr);
-    }
+      _haveLargeAsid64(p.have_large_asid_64), _sveVL(p.sve_vl),
+      _smeVL(p.sme_vl), semihosting(p.semihosting), release(p.release),
+      multiProc(p.multi_proc) {
+  if (p.auto_reset_addr) {
+    _resetAddr = workload->getEntry();
+  } else {
+    _resetAddr = p.reset_addr;
+    warn_if(workload->getEntry() != _resetAddr,
+            "Workload entry point %#x and reset address %#x are different",
+            workload->getEntry(), _resetAddr);
+  }
 
-    bool wl_is_64 = (workload->getArch() == loader::Arm64);
-    if (wl_is_64 != _highestELIs64) {
-        warn("Highest ARM exception-level set to AArch%d but the workload "
-              "is for AArch%d. Assuming you wanted these to match.",
-              _highestELIs64 ? 64 : 32, wl_is_64 ? 64 : 32);
-        _highestELIs64 = wl_is_64;
-    }
+  bool wl_is_64 = (workload->getArch() == loader::Arm64);
+  if (wl_is_64 != _highestELIs64) {
+    warn("Highest ARM exception-level set to AArch%d but the workload "
+         "is for AArch%d. Assuming you wanted these to match.",
+         _highestELIs64 ? 64 : 32, wl_is_64 ? 64 : 32);
+    _highestELIs64 = wl_is_64;
+  }
 
-    if (_highestELIs64 && (
-            _physAddrRange64 < 32 ||
-            _physAddrRange64 > MaxPhysAddrRange ||
-            (_physAddrRange64 % 4 != 0 && _physAddrRange64 != 42) ||
-            (_physAddrRange64 == 52 && !release->has(ArmExtension::FEAT_LPA))))
-    {
-        fatal("Invalid physical address range (%d)\n", _physAddrRange64);
-    }
+  if (_highestELIs64 &&
+      (_physAddrRange64 < 32 || _physAddrRange64 > MaxPhysAddrRange ||
+       (_physAddrRange64 % 4 != 0 && _physAddrRange64 != 42) ||
+       (_physAddrRange64 == 52 && !release->has(ArmExtension::FEAT_LPA)))) {
+    fatal("Invalid physical address range (%d)\n", _physAddrRange64);
+  }
 }
 
-bool
-ArmSystem::has(ArmExtension ext, ThreadContext *tc)
-{
-    return FullSystem? getArmSystem(tc)->has(ext) : false;
+bool ArmSystem::has(ArmExtension ext, ThreadContext *tc) {
+  return FullSystem ? getArmSystem(tc)->has(ext) : false;
 }
 
-bool
-ArmSystem::highestELIs64(ThreadContext *tc)
-{
-    return FullSystem? getArmSystem(tc)->highestELIs64() : true;
+bool ArmSystem::highestELIs64(ThreadContext *tc) {
+  return FullSystem ? getArmSystem(tc)->highestELIs64() : true;
 }
 
-ExceptionLevel
-ArmSystem::highestEL(ThreadContext *tc)
-{
-    return FullSystem? getArmSystem(tc)->highestEL() : EL1;
+ExceptionLevel ArmSystem::highestEL(ThreadContext *tc) {
+  return FullSystem ? getArmSystem(tc)->highestEL() : EL1;
 }
 
-bool
-ArmSystem::haveEL(ThreadContext *tc, ExceptionLevel el)
-{
-    switch (el) {
-      case EL0:
-      case EL1:
-        return true;
-      case EL2:
-        return has(ArmExtension::VIRTUALIZATION, tc);
-      case EL3:
-        return has(ArmExtension::SECURITY, tc);
-      default:
-        warn("Unimplemented Exception Level\n");
-        return false;
-    }
+bool ArmSystem::haveEL(ThreadContext *tc, ExceptionLevel el) {
+  switch (el) {
+  case EL0:
+  case EL1:
+    return true;
+  case EL2:
+    return has(ArmExtension::VIRTUALIZATION, tc);
+  case EL3:
+    return has(ArmExtension::SECURITY, tc);
+  default:
+    warn("Unimplemented Exception Level\n");
+    return false;
+  }
 }
 
-Addr
-ArmSystem::resetAddr(ThreadContext *tc)
-{
-    return getArmSystem(tc)->resetAddr();
+Addr ArmSystem::resetAddr(ThreadContext *tc) {
+  return getArmSystem(tc)->resetAddr();
 }
 
-uint8_t
-ArmSystem::physAddrRange(ThreadContext *tc)
-{
-    return getArmSystem(tc)->physAddrRange();
+uint8_t ArmSystem::physAddrRange(ThreadContext *tc) {
+  return getArmSystem(tc)->physAddrRange();
 }
 
-Addr
-ArmSystem::physAddrMask(ThreadContext *tc)
-{
-    return getArmSystem(tc)->physAddrMask();
+Addr ArmSystem::physAddrMask(ThreadContext *tc) {
+  return getArmSystem(tc)->physAddrMask();
 }
 
-bool
-ArmSystem::haveLargeAsid64(ThreadContext *tc)
-{
-    return getArmSystem(tc)->haveLargeAsid64();
+bool ArmSystem::haveLargeAsid64(ThreadContext *tc) {
+  return getArmSystem(tc)->haveLargeAsid64();
 }
 
-bool
-ArmSystem::haveSemihosting(ThreadContext *tc)
-{
-    return FullSystem && getArmSystem(tc)->haveSemihosting();
+bool ArmSystem::haveSemihosting(ThreadContext *tc) {
+  return FullSystem && getArmSystem(tc)->haveSemihosting();
 }
 
-bool
-ArmSystem::callSemihosting64(ThreadContext *tc, bool gem5_ops)
-{
-    return getArmSystem(tc)->semihosting->call64(tc, gem5_ops);
+bool ArmSystem::callSemihosting64(ThreadContext *tc, bool gem5_ops) {
+  return getArmSystem(tc)->semihosting->call64(tc, gem5_ops);
 }
 
-bool
-ArmSystem::callSemihosting32(ThreadContext *tc, bool gem5_ops)
-{
-    return getArmSystem(tc)->semihosting->call32(tc, gem5_ops);
+bool ArmSystem::callSemihosting32(ThreadContext *tc, bool gem5_ops) {
+  return getArmSystem(tc)->semihosting->call32(tc, gem5_ops);
 }
 
-bool
-ArmSystem::callSemihosting(ThreadContext *tc, bool gem5_ops)
-{
-    if (ArmISA::inAArch64(tc))
-        return callSemihosting64(tc, gem5_ops);
-    else
-        return callSemihosting32(tc, gem5_ops);
+bool ArmSystem::callSemihosting(ThreadContext *tc, bool gem5_ops) {
+  if (ArmISA::inAArch64(tc))
+    return callSemihosting64(tc, gem5_ops);
+  else
+    return callSemihosting32(tc, gem5_ops);
 }
 
-void
-ArmSystem::callSetStandByWfi(ThreadContext *tc)
-{
-    if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
-        pwr_ctrl->setStandByWfi(tc);
+void ArmSystem::callSetStandByWfi(ThreadContext *tc) {
+  if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
+    pwr_ctrl->setStandByWfi(tc);
 }
 
-void
-ArmSystem::callClearStandByWfi(ThreadContext *tc)
-{
-    if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
-        pwr_ctrl->clearStandByWfi(tc);
+void ArmSystem::callClearStandByWfi(ThreadContext *tc) {
+  if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
+    pwr_ctrl->clearStandByWfi(tc);
 }
 
-bool
-ArmSystem::callSetWakeRequest(ThreadContext *tc)
-{
-    if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
-        return pwr_ctrl->setWakeRequest(tc);
-    else
-        return true;
+bool ArmSystem::callSetWakeRequest(ThreadContext *tc) {
+  if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
+    return pwr_ctrl->setWakeRequest(tc);
+  else
+    return true;
 }
 
-void
-ArmSystem::callClearWakeRequest(ThreadContext *tc)
-{
-    if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
-        pwr_ctrl->clearWakeRequest(tc);
+void ArmSystem::callClearWakeRequest(ThreadContext *tc) {
+  if (FVPBasePwrCtrl *pwr_ctrl = getArmSystem(tc)->getPowerController())
+    pwr_ctrl->clearWakeRequest(tc);
 }
 
 } // namespace gem5

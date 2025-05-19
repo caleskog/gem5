@@ -46,6 +46,13 @@ class IntALU(FUDesc):
     opList = [OpDesc(opClass="IntAlu")]
     count = 6
 
+class SAFU(FUDesc):
+    opList = [
+        OpDesc(opClass="SAProcess", opLat=1),
+        OpDesc(opClass="SAQueue", opLat=1),
+        OpDesc(opClass="SALoad", opLat=1)
+    ]
+    count = 1 # How many FUs of this type the CU should have.
 
 class IntMultDiv(FUDesc):
     opList = [

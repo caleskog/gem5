@@ -1,0 +1,8 @@
+Import('*')
+
+Source('systolic_array_utils.cc')
+
+# The accelerator
+SimObject('SystolicArray.py', sim_objects=['SystolicArray'], tags='arm isa')
+Source('systolic_array.cc', tags='arm isa')
+DebugFlag('SA', tags='arm isa')

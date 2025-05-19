@@ -1,0 +1,12 @@
+CompileFlags:
+  Add: [-I/home/cck/p4/gem5-manager/gem5/src]
+
+Diagnostics:
+  ClangTidy:
+    Remove: "*"
+---
+If:
+  PathExclude: src/arch/arm/isa/*
+Diagnostics:
+  ClangTidy:
+    Add: [modernize-*,readability-*]

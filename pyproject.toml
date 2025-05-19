@@ -1,3 +1,14 @@
+[tool.pyright]
+exclude = ["**/__pycache__"]
+reportMissingModuleSource = false
+executionEnvironments = [
+    {
+        root = ".",
+        pythonPath = "/home/cck/p4/gem5-manager/env/bin/python3.11",
+        extraPaths = ["./", "./src/python/", "/home/cck/p4/gem5-manager/env/lib/python3.11/site-packages/", "./site_scons/"]
+    }
+]
+
 [tool.black]
 line-length = 79
 include = '\.pyi?$'

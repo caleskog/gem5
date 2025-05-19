@@ -98,6 +98,9 @@ class BaseCPU(ClockedObject):
     def takeOverFrom(self, old_cpu):
         self._ccObject.takeOverFrom(old_cpu._ccObject)
 
+
+    systolic_array = Param.SystolicArray("Optional attached accelerator (systolic array)")
+
     system = Param.System(Parent.any, "system object")
     cpu_id = Param.Int(-1, "CPU identifier")
     socket_id = Param.Unsigned(0, "Physical Socket identifier")

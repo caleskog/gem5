@@ -2464,34 +2464,88 @@ namespace Aarch64
                     (bits(machInst, 23, 21) != 0 && bits(machInst, 31) == 0))
                 return new Unknown64(machInst);
             RegIndex rd = (RegIndex)(uint8_t)bits(machInst, 4, 0);
-            RegIndex rdzr = makeZero(rd);
             RegIndex rn = (RegIndex)(uint8_t)bits(machInst, 9, 5);
             RegIndex ra = (RegIndex)(uint8_t)bits(machInst, 14, 10);
             RegIndex rm = (RegIndex)(uint8_t)bits(machInst, 20, 16);
             switch (bits(machInst, 23, 21)) {
               case 0x0:
+              {
+                RegIndex rdzr = makeZero(rd);
                 if (bits(machInst, 15) == 0)
                     return new Madd64(machInst, rdzr, ra, rn, rm);
                 else
                     return new Msub64(machInst, rdzr, ra, rn, rm);
+              }
               case 0x1:
+              {
+                RegIndex rdzr = makeZero(rd);
                 if (bits(machInst, 15) == 0)
                     return new Smaddl64(machInst, rdzr, ra, rn, rm);
                 else
                     return new Smsubl64(machInst, rdzr, ra, rn, rm);
+              }
               case 0x2:
+              {
+                RegIndex rdzr = makeZero(rd);
                 if (bits(machInst, 15) != 0)
                     return new Unknown64(machInst);
                 return new Smulh64(machInst, rdzr, rn, rm);
+              }
+              case 0x3:
+              case 0x4: // Custom Instructions
+                // bit 28=1
+                // bit 27:25=101
+                // bit 24=1
+                // bit 23:21=100 or 011
+                // Modified 'madd' from: https://www.scs.stanford.edu/~zyedidia/arm64/madd.html
+                // op1 = rn
+                // op2 = rm
+                // op3 = ra
+                // dest = rd
+                /* FU Systolic Array (fusa) Parameter read
+                 * Instruction format: |sf|_op54_|______|_op31|__rm__|o0|__ra__|__rn__|__rd__|
+                 * Bits:               |31|30__29|28__24|23_21|20__16|15|14__10|9____5|4____0|
+                 * Binary layout:      |_1|..00..|1_1011|_000.|0_1000|_1|001_11|01_001|0_1010|
+                 * Hex layout:         |__|___5__|____7_|___0_|____8_|__|_9____|D____2|____A_|
+                 * gem5 variables:     |__|______|______|_____|_Op264|__|_Op364|_Op164|Dest64|
+                 *
+                 * Bit details:
+                 *  - 31:       32-bit(sf==0) or 64-bit(sf==1)
+                 *  - 23-21:    011 (Fusaprocess64) or 100 (Fusaqueue64/Fusaload64)
+                 *  - 15:       Fusaqueue64 (o0==0) or Fusaload64 (o0==1)
+                 *
+                 * Queueing arguments:
+                 *  - rd (dest)
+                 *  - rm (op2)
+                 *  - ra (op3)
+                 *  - rn (op1)
+                */
+                switch (bits(machInst, 23, 21)) {
+                    case 0x3:
+                        return new Fusaprocess64(machInst, rd, rn, rm);
+                    case 0x4:
+                        if (bits(machInst, 15) == 0)
+                            return new Fusaqueue64(machInst, rd, ra, rn, rm);
+                        else
+                            return new Fusaload64(machInst, rd, ra, rn, rm);
+                    default:
+                        GEM5_UNREACHABLE;
+                }
               case 0x5:
+              {
+                RegIndex rdzr = makeZero(rd);
                 if (bits(machInst, 15) == 0)
                     return new Umaddl64(machInst, rdzr, ra, rn, rm);
                 else
                     return new Umsubl64(machInst, rdzr, ra, rn, rm);
+              }
               case 0x6:
+              {
+                RegIndex rdzr = makeZero(rd);
                 if (bits(machInst, 15) != 0)
                     return new Unknown64(machInst);
                 return new Umulh64(machInst, rdzr, rn, rm);
+              }
               default:
                 return new Unknown64(machInst);
             }

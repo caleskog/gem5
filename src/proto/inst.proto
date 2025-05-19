@@ -97,6 +97,9 @@ message Inst {
     MemWrite = 31;
     IprAccess = 32;
     InstPrefetch = 33;
+    SAProcess = 34;
+    SAQueue = 35;
+    SALoad = 36;
   }
 
   optional InstType type = 6; // add, mul, fp add, load, store, simd add, …

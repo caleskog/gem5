@@ -43,15 +43,14 @@
 
 #include "enums/OpClass.hh"
 
-namespace gem5
-{
+namespace gem5 {
 
 /*
  * Do a bunch of wonky stuff to maintain backward compatability so I
  * don't have to change code in a zillion places.
  */
-using enums::OpClass;
 using enums::No_OpClass;
+using enums::OpClass;
 
 static const OpClass IntAluOp = enums::IntAlu;
 static const OpClass IntMultOp = enums::IntMult;
@@ -110,30 +109,31 @@ static const OpClass FloatMemReadOp = enums::FloatMemRead;
 static const OpClass FloatMemWriteOp = enums::FloatMemWrite;
 static const OpClass SimdUnitStrideLoadOp = enums::SimdUnitStrideLoad;
 static const OpClass SimdUnitStrideStoreOp = enums::SimdUnitStrideStore;
-static const OpClass SimdUnitStrideMaskLoadOp
-             = enums::SimdUnitStrideMaskLoad;
-static const OpClass SimdUnitStrideMaskStoreOp
-             = enums::SimdUnitStrideMaskStore;
+static const OpClass SimdUnitStrideMaskLoadOp = enums::SimdUnitStrideMaskLoad;
+static const OpClass SimdUnitStrideMaskStoreOp = enums::SimdUnitStrideMaskStore;
 static const OpClass SimdStridedLoadOp = enums::SimdStridedLoad;
 static const OpClass SimdStridedStoreOp = enums::SimdStridedStore;
 static const OpClass SimdIndexedLoadOp = enums::SimdIndexedLoad;
 static const OpClass SimdIndexedStoreOp = enums::SimdIndexedStore;
-static const OpClass SimdUnitStrideFaultOnlyFirstLoadOp
-             = enums::SimdUnitStrideFaultOnlyFirstLoad;
-static const OpClass SimdWholeRegisterLoadOp
-             = enums::SimdWholeRegisterLoad;
-static const OpClass SimdWholeRegisterStoreOp
-             = enums::SimdWholeRegisterStore;
+static const OpClass SimdUnitStrideFaultOnlyFirstLoadOp =
+    enums::SimdUnitStrideFaultOnlyFirstLoad;
+static const OpClass SimdWholeRegisterLoadOp = enums::SimdWholeRegisterLoad;
+static const OpClass SimdWholeRegisterStoreOp = enums::SimdWholeRegisterStore;
 static const OpClass IprAccessOp = enums::IprAccess;
 static const OpClass InstPrefetchOp = enums::InstPrefetch;
-static const OpClass SimdUnitStrideSegmentedLoadOp = enums::SimdUnitStrideSegmentedLoad;
-static const OpClass SimdUnitStrideSegmentedStoreOp
-             = enums::SimdUnitStrideSegmentedStore;
+static const OpClass SimdUnitStrideSegmentedLoadOp =
+    enums::SimdUnitStrideSegmentedLoad;
+static const OpClass SimdUnitStrideSegmentedStoreOp =
+    enums::SimdUnitStrideSegmentedStore;
 static const OpClass SimdExtOp = enums::SimdExt;
 static const OpClass SimdFloatExtOp = enums::SimdFloatExt;
 static const OpClass SimdConfigOp = enums::SimdConfig;
-static const OpClass Num_OpClasses = enums::Num_OpClass;
 
+static const OpClass SAProcessOp = enums::SAProcess;
+static const OpClass SAQueueOp = enums::SAQueue;
+static const OpClass SALoadOp = enums::SALoad;
+
+static const OpClass Num_OpClasses = enums::Num_OpClass;
 } // namespace gem5
 
 #endif // __CPU__OP_CLASS_HH__
