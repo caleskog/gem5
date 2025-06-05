@@ -21,6 +21,7 @@ public:
     delete[] inw_max_num_chars_cols;
     delete[] inWaitingMemory;
   };
+  void print_top();
   void print_fifo_tile();
   void print_out();
 

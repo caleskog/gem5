@@ -22,6 +22,7 @@ struct SATile {
         inputMemory(new f64[KERNEL_DIM * KERNEL_DIM]),
         outputMemory(new f64[KERNEL_DIM * (KERNEL_DIM + 1)]),
         inWaitingMemory(new f64[KERNEL_DIM * KERNEL_DIM]),
+        inTopWaitingMemory(new f64[KERNEL_DIM * KERNEL_DIM]),
         outWaitingMemory(new f64[KERNEL_DIM * KERNEL_DIM]),
         resultVecMemory(new f64[KERNEL_DIM]) {
     const size_t size = KERNEL_DIM * KERNEL_DIM;
@@ -30,6 +31,7 @@ struct SATile {
     memset(weights, 0, size * sizeof(f64));
     memset(inputMemory, 0, size * sizeof(f64));
     memset(inWaitingMemory, 0, size * sizeof(f64));
+    memset(inTopWaitingMemory, 0, size * sizeof(f64));
     memset(outWaitingMemory, 0, size * sizeof(f64));
 
     memset(outputMemory, 0, (size + KERNEL_DIM) * sizeof(f64));
@@ -37,13 +39,16 @@ struct SATile {
     memset(resultVecMemory, 0, KERNEL_DIM * sizeof(f64));
   }
 
-  f64 *weights;          // was int8_t
-  f64 *inputMemory;      // was int8_t
-  f64 *outputMemory;     // was int32_t
-  f64 *inWaitingMemory;  // was int8_t
+  f64 *weights;         // was int8_t
+  f64 *inputMemory;     // was int8_t
+  f64 *outputMemory;    // was int32_t
+  f64 *inWaitingMemory; // was int8_t
+  f64 *inTopWaitingMemory;
   f64 *outWaitingMemory; // was uint8_t
   f64 *resultVecMemory;
   bool non_zero_tile = false;
+  int nrtowavefronts = 0;
+  std::vector<int> wavefront;
 };
 
 class SystolicArray : public SimObject {
