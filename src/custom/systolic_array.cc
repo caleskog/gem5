@@ -390,9 +390,12 @@ namespace gem5
         {
             // Set wavefront such that when the first value is computed it's
             // taken first.
+            // if (tiles[TID]->wavefront.size() != 1)
+            // {
             tiles[TID]->wavefront.push_back(0);
+            // }
         }
-        // printf("nr of wavefronts: %zu\n", tiles[TID]->wavefront.size());
+        // printf("nr to wavefronts: %d\n", tiles[TID]->nrtowavefronts);
 
         //////////////////////////////////////////////////////////
         ///////////////////// GET INPUT //////////////////////////
@@ -528,6 +531,7 @@ namespace gem5
 
         // Copy the wavefronts to the correct location in the waiting output
         // array
+        // printf("#wavefronts: %zu\n", tiles[TID]->wavefront.size());
         auto last       = tiles[TID]->wavefront.end();
         int  nr_removes = 0;
         for (auto wavefront = tiles[TID]->wavefront.begin();
@@ -539,7 +543,8 @@ namespace gem5
                 {
                     int y = *wavefront - wave;
                     // printf("wavefront: %d\n(0,%d)[wave] =
-                    // (%d,%d)[y,wave]\n", *wavefront, wave, y, wave);
+                    // (%d,%d)[y,wave]\n",
+                    //        *wavefront, wave, y, wave);
                     if (y >= 0 && y < KERNEL_DIM)
                     {
                         mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM, 0,
@@ -550,16 +555,20 @@ namespace gem5
                     }
                 }
             }
-            *wavefront = (*wavefront + 1) % (KERNEL_DIM + KERNEL_DIM - 1);
-            if (*wavefront == 0)
+            // *wavefront = (*wavefront + 1) % (KERNEL_DIM + KERNEL_DIM - 1);
+            *wavefront = *wavefront + 1;
+            if (*wavefront == KERNEL_DIM + KERNEL_DIM - 1)
             {
                 last = wavefront;
                 nr_removes++;
             }
         }
-        // if (nr_removes > 0) {
-        //   tiles[TID]->wavefront.erase(tiles[TID]->wavefront.begin(), last);
-        // }
+        // printf("to remove: %d\n", nr_removes);
+        if (nr_removes > 0)
+        {
+            tiles[TID]->wavefront.erase(tiles[TID]->wavefront.begin(),
+                                        last + 1);
+        }
 
         // std::cout << "[ASM] count: " << asm_count << std::endl;
         return vdst;
