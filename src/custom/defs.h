@@ -24,12 +24,12 @@
 // Converter: double to/from uint64_t
 typedef union c64_t
 {
-  double f;
-  uint64_t u;
-  double *p;
+    double   f;
+    uint64_t u;
+    double*  p;
 } c64;
 typedef uint64_t u64;
-typedef int64_t i64;
-typedef double f64;
+typedef int64_t  i64;
+typedef double   f64;
 
 #endif // INCLUDE_CUSTOM_DEFS_HH_

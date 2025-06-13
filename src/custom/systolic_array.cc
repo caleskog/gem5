@@ -344,7 +344,7 @@ namespace gem5
         int row_idx;
         for (size_t i = 0; i < SIZE; i++)
         {
-            row_idx   = KERNEL_DIM - 1 - (col + i);
+            row_idx   = KERNEL_DIM - (col + i);
             col_idx   = col + i;
             outbuf[i] = mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM,
                               row_idx, col_idx);
@@ -488,15 +488,16 @@ namespace gem5
         /**
          * Must do this before shifting the outWaitingMemory array.
          * That way, we get the result corresponding to the preceding queue
-         *calls in this process call too.
+         * calls in this process call too.
          **/
         // Return the output
-        int row_idx = KERNEL_DIM - 1;
-        int col_idx = 0;
+        int row_idx; // = KERNEL_DIM - 1;
+        int col_idx; // = 0;
         for (size_t i = 0; i < SIZE; i++)
         {
-            row_idx   = SIZE - 1 - i;
-            col_idx   = KERNEL_DIM - SIZE + i;
+            row_idx = SIZE - i;
+            col_idx = KERNEL_DIM - SIZE + i;
+            // printf("(%d,%d)\n", col_idx, row_idx);
             outbuf[i] = mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM,
                               row_idx, col_idx);
         }
@@ -513,20 +514,16 @@ namespace gem5
         //////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////
 
-#ifdef SMM_PRINT
-        smm_print.print_out();
-#endif
-
         // Shift the outWaitingMemory because of the skew in the output
-        for (int j = 0; j < KERNEL_DIM; j++)
+        for (int i = 0; i < KERNEL_DIM; i++)
         {
-            for (int i = KERNEL_DIM - 1; i > 0; i--)
+            for (int j = KERNEL_DIM + 1; j > 0; j--)
             { // TODO: shift only the right-hand triangle
-                mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM, i, j) =
-                    mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM, i - 1, j);
+                mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM, j, i) =
+                    mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM, j - 1, i);
             }
-            mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM, 0, j) =
-                mem2d(tiles[TID]->outputMemory, KERNEL_DIM, KERNEL_DIM, j);
+            // mem2d(tiles[TID]->outWaitingMemory, KERNEL_DIM, 0, j) =
+            //     mem2d(tiles[TID]->outputMemory, KERNEL_DIM, KERNEL_DIM, j);
         }
 
         // Copy the wavefronts to the correct location in the waiting output
@@ -570,8 +567,21 @@ namespace gem5
                                         last + 1);
         }
 
+#ifdef SMM_PRINT
+        smm_print.print_out();
+#endif
+
         // std::cout << "[ASM] count: " << asm_count << std::endl;
         return vdst;
+    }
+
+    void SystolicArray::print(u64 tid)
+    {
+
+        myutils::sa::PrintTile smm_print(tiles[tid], 2, 2);
+        smm_print.print_top();
+        smm_print.print_fifo_tile();
+        smm_print.print_out();
     }
 
     void SystolicArray::setThreadContex(ThreadContext* tc)

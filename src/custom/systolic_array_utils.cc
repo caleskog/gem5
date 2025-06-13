@@ -45,12 +45,12 @@ void sa::PrintTile::print_top()
             }
             if (i >= MAX_ROWS - 1 - j)
             {
-                du_pprintcnzp_n(YELLOW, GRAY, inw_num_chars[i],
+                du_pprintcnzp_n(GREEN, GRAY, inw_num_chars[i],
                                 pr::ALIGNMENT::RIGHT, cell);
             }
             else
             {
-                du_pprintcnzp_n(YELLOW, GRAY, inw_num_chars[i],
+                du_pprintcnzp_n(GREEN, GRAY, inw_num_chars[i],
                                 pr::ALIGNMENT::RIGHT, "");
             }
             if (i != KERNEL_DIM - 1)
@@ -144,8 +144,8 @@ void sa::PrintTile::print_fifo_tile()
         {
             if (y == wavefront - x)
             {
-                du_pprintcnzp_n(BLUE, GRAY, out_num_chars[x],
-                                pr::ALIGNMENT::RIGHT, cell);
+                du_pprintcp_n(BLUE, out_num_chars[x], pr::ALIGNMENT::RIGHT,
+                              cell);
                 set_blue = true;
             }
         }
@@ -178,10 +178,10 @@ void sa::PrintTile::print_fifo_tile()
 void sa::PrintTile::print_out()
 {
     size_t* outw_num_chars =
-        pr::getMaxPadding(tile->outWaitingMemory, KERNEL_DIM, KERNEL_DIM);
+        pr::getMaxPadding(tile->outWaitingMemory, KERNEL_DIM, KERNEL_DIM + 2);
     du_pprintcp_n(BLUE, print_max_padding, pr::ALIGNMENT::LEFT, "");
     du_pprintc(BLUE, "Out FIFO:");
-    for (int j = 0; j < KERNEL_DIM; j++)
+    for (int j = 0; j < KERNEL_DIM + 2; j++)
     {
         for (int i = 0; i < KERNEL_DIM; i++)
         {
@@ -191,7 +191,7 @@ void sa::PrintTile::print_out()
                 du_pprintcp_n(GRAY, print_max_padding, pr::ALIGNMENT::RIGHT,
                               "");
             }
-            if (KERNEL_DIM - 1 - j >= i)
+            if (KERNEL_DIM + 1 - j >= i)
             {
                 if (j == 0)
                 {
@@ -206,7 +206,7 @@ void sa::PrintTile::print_out()
             }
             if (i != KERNEL_DIM - 1)
             {
-                if (KERNEL_DIM - 1 - j > i)
+                if (KERNEL_DIM + 1 - j > i)
                 {
                     du_pprintc_n(GRAY, ";");
                 }
